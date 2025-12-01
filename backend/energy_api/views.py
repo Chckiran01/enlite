@@ -35,7 +35,7 @@ FEATURE_RANGES = {
 }
 
 # ------------------------------------------------------------
-# Clean model loader (NO GPU code)
+# Clean model loader
 # ------------------------------------------------------------
 def load_all():
     """Load model, encoder, scaler safely in CPU environment."""
