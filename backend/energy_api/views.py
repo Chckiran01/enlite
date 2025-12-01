@@ -153,7 +153,9 @@ def get_recommendations(vals):
 def get_building_types(request):
     try:
         _, le, _, _ = load_all()
-        classes = list(map(str, getattr(le, "classes_", [])))
+
+        classes_raw = list(map(str, getattr(le, "classes_", [])))
+        classes = [c.title() for c in classes_raw]  # Capitalize first letter
 
         return Response({"building_types": classes})
 
