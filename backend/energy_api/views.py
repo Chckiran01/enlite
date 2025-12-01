@@ -1,6 +1,5 @@
 import os
 import traceback
-import json
 from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -36,58 +35,20 @@ FEATURE_RANGES = {
 }
 
 # ------------------------------------------------------------
-# Safe Model Loader (removes all GPU configs)
+# Clean model loader (NO GPU code)
 # ------------------------------------------------------------
 def load_all():
-    """Load model, encoder, scaler → fully CPU safe."""
+    """Load model, encoder, scaler safely in CPU environment."""
     
-    # -------------------------------
-    # Load MODEL
-    # -------------------------------
     if _loaded["model"] is None:
-        model = joblib.load(MODEL_PATH)
+        _loaded["model"] = joblib.load(MODEL_PATH)
 
-        # Make model CPU-safe (remove GPU attributes)
-        try:
-            booster = model.get_booster()
-
-            params = json.loads(booster.load_config())
-            gbm = params["learner"]["gradient_booster"]["model"]
-
-            gpu_keys = ["gpu_id", "predictor", "tree_method"]
-
-            for key in gpu_keys:
-                if key in gbm:
-                    del gbm[key]
-
-            # Force CPU mode
-            booster.set_param({
-                "predictor": "cpu_predictor",
-                "tree_method": "hist"
-            })
-
-            model._Booster = booster
-
-        except Exception as e:
-            print("⚠ GPU disable failed:", e)
-
-        _loaded["model"] = model
-
-    # -------------------------------
-    # Load ENCODER
-    # -------------------------------
     if _loaded["le"] is None:
         _loaded["le"] = joblib.load(LE_PATH)
 
-    # -------------------------------
-    # Load SCALER
-    # -------------------------------
     if _loaded["sc"] is None:
         _loaded["sc"] = joblib.load(SC_PATH)
 
-    # -------------------------------
-    # Load Feature Order
-    # -------------------------------
     if _loaded["features"] is None:
         sc = _loaded["sc"]
         if hasattr(sc, "feature_names_in_"):
@@ -149,10 +110,9 @@ def get_recommendations(vals):
             continue
 
         if feat in ["Floor_Insulation", "Door_Insulation", "Roof_Insulation",
-                    "Window_Insulation", "Wall_Insulation"]:
-            if v > max_v * 0.7:
-                issues.append(f"{feat} is high (poor insulation).")
-                recs.append("Improve insulation (lower U-values).")
+                    "Window_Insulation", "Wall_Insulation"] and v > max_v * 0.7:
+            issues.append(f"{feat} is high (poor insulation).")
+            recs.append("Improve insulation (lower U-values).")
 
         if feat == "Hvac_Efficiency" and v < 2:
             issues.append("Low HVAC efficiency.")
