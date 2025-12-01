@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import html2pdf from "html2pdf.js";
 
-const API_BASE = "https://courageous-growth-production-54e0.up.railway.app/api";
+const API_BASE = "http://127.0.0.1:8000/api";
 
 const SECTION_ORDER = [
   "Building_Type",
