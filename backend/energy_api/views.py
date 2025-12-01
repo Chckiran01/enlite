@@ -42,6 +42,12 @@ def load_all():
     if _loaded["model"] is None:
         _loaded["model"] = joblib.load(MODEL_PATH)
 
+        # 🔧 Force model to use CPU prediction (fixes 'gpu_id' errors)
+        try:
+            _loaded["model"].set_params(tree_method="hist", predictor="cpu_predictor")
+        except:
+            pass
+
     if _loaded["le"] is None:
         _loaded["le"] = joblib.load(LE_PATH)
 
@@ -51,11 +57,8 @@ def load_all():
     if _loaded["features"] is None:
         sc = _loaded["sc"]
 
-        # Modern sklearn objects store input order here:
         if hasattr(sc, "feature_names_in_"):
             _loaded["features"] = list(sc.feature_names_in_)
-
-        # Manual fallback (your training column order)
         else:
             _loaded["features"] = [
                 "Building_Type",
