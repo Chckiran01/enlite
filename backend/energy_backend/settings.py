@@ -4,7 +4,6 @@ Django settings for energy_backend project.
 
 from pathlib import Path
 import os
-import dj_database_url
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -15,11 +14,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -------------------
 
 SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-default-key")
-DEBUG = False
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
 ALLOWED_HOSTS = ["*"]
 
 # -------------------
-# APPS
+# APPLICATIONS
 # -------------------
 
 INSTALLED_APPS = [
@@ -43,13 +43,12 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 
-    # WhiteNoise must be here
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    # Required for static files on Railway
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 
     "corsheaders.middleware.CorsMiddleware",
 
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -79,36 +78,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'energy_backend.wsgi.application'
 
 # -------------------
-# DATABASE
+# DATABASE (SQLite only — no external DB)
 # -------------------
 
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=1800,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
-
-# -------------------
-# STATIC FILES
-# -------------------
-
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-# Enable static file compression & caching
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # -------------------
 # PASSWORD VALIDATION
 # -------------------
 
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
+AUTH_PASSWORD_VALIDATORS = []
 
 # -------------------
 # INTERNATIONALIZATION
@@ -118,5 +102,14 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+
+# -------------------
+# STATIC FILES FOR RAILWAY
+# -------------------
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

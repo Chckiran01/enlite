@@ -131,7 +131,7 @@ style={{
   
   {/* CONTAINER 2: WHY CLIENTS NEED IT */}
   <motion.div
-   className="bg-white p-8 shadow-xl border border-gray-200 text-lg"
+   className="bg-white p-6 shadow-xl border border-gray-200 text-lg"
    variants={fadeUp}
    initial="hidden"
    whileInView="visible"
